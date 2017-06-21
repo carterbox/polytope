@@ -296,14 +296,14 @@ class Polytope(object):
         return reduce(Polytope(iA, ib), abs_tol=abs_tol)
 
     def translation(self, d):
-        """Returns a copy of C{self} translated by the vector C{d}.
+        """Return a copy of C{self} translated by the vector C{d}.
 
-        Consult L{polytope.polytope._translate} for implementation details.
+        Consult L{polytope.polytope.translate} for implementation details.
 
         @type d: 1d array
         """
         newpoly = self.copy()
-        _translate(newpoly, d)
+        translate(newpoly, d)
         return newpoly
 
     def rotation(self, R):
@@ -444,7 +444,7 @@ class Polytope(object):
         _plot_text(self, txt, ax, color)
 
 
-def _translate(polyreg, d):
+def translate(polyreg, d):
     """Translate C{polyreg} by the vector C{d}. Modifies C{polyreg} in-place.
 
     @type d: 1d array
@@ -455,13 +455,25 @@ def _translate(polyreg, d):
     else:
         # Translate subregions
         for poly in polyreg.list_poly:
-            _translate(poly, d)
+            translate(poly, d)
     # Translate bbox and cheby
     if polyreg.bbox is not None:
         polyreg.bbox = (polyreg.bbox[0] + d,
                         polyreg.bbox[1] + d)
     if polyreg._chebXc is not None:
         polyreg._chebXc = polyreg._chebXc + d
+
+
+def translation(polyreg, d):
+    """Return a copy of C{polyreg} translated by the vector C{d}.
+
+    Consult L{polytope.polytope.translate} for implementation details.
+
+    @type d: 1d array
+    """
+    newreg = polyreg.copy()
+    translate(newreg, d)
+    return newreg
 
 
 def rotate(polyreg, R):
@@ -840,14 +852,14 @@ class Region(object):
         return newreg
 
     def translation(self, d):
-        """Returns a copy of C{self} translated by the vector C{d}.
+        """Return a copy of C{self} translated by the vector C{d}.
 
-        Consult L{polytope.polytope._translate} for implementation details.
+        Consult L{polytope.polytope.translate} for implementation details.
 
         @type d: 1d array
         """
         newreg = self.copy()
-        _translate(newreg, d)
+        translate(newreg, d)
         return newreg
 
     def __copy__(self):

@@ -38,7 +38,9 @@ from .polytope import (
     is_empty, is_fulldim, is_convex, is_adjacent, is_subset,
     reduce, separate, box2poly, grid_region,
     cheby_ball, bounding_box, envelope, extreme, qhull,
-    is_inside, union, mldivide, intersect, volume, projection
+    is_inside, union, mldivide, intersect, volume, projection,
+    rotate, translate, rotation, translation, givens_rotation_matrix,
+    solve_rotation_ap
 )
 # from .plot import plot_partition, plot_transition_arrow
 from .prop2partition import Partition, MetricPartition, find_adjacent_regions
