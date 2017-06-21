@@ -306,23 +306,16 @@ class Polytope(object):
         _translate(newpoly, d)
         return newpoly
 
-    def rotation(self, i=None, j=None, theta=None):
-        """Returns a rotated copy of C{self}.
+    def rotation(self, R):
+        """Return a rotated copy of C{self}.
 
-        Describe the plane of rotation and the angle of rotation (in radians)
-        with i, j, and theta.
+        Consult L{polytope.polytope.rotate} for more detail.
 
-        i and j are the indices 0..N-1 of two of the identity basis
-        vectors, and theta is the angle of rotation.
-
-        Consult L{polytope.polytope._rotate} for more detail.
-
-        @type i: int
-        @type j: int
-        @type theta: number
+        @param R: A predefined rotation matrix.
+        @type R: 2d array
         """
         newpoly = self.copy()
-        _rotate(newpoly, i=i, j=j, theta=theta)
+        rotate(newpoly, R)
         return newpoly
 
     def copy(self):
@@ -471,78 +464,32 @@ def _translate(polyreg, d):
         polyreg._chebXc = polyreg._chebXc + d
 
 
-def _rotate(polyreg, i=None, j=None, u=None, v=None, theta=None, R=None):
-    """Rotate C{polyreg} in-place. Return the rotation matrix.
+def rotate(polyreg, R):
+    """Rotate C{polyreg} in-place.
+
+    Provide an N-by-N rotation matrix, R. WARNING: No checks are made to
+    determine whether the provided transformation matrix is a valid rotation.
 
     There are two types of rotation: simple and compound. For simple rotations,
     by definition, all motion can be projected as circles in a single plane;
     the other N - 2 dimensions are invariant. Therefore any simple rotation can
-    be parameterized by its plane of rotation. Compound rotations are the
-    combination of multiple simple rotations; they have more than one plane of
-    rotation. For N > 3 dimensions, a compound rotation may be necessary to map
-    one orientation to another (Euler's rotation theorem no longer applies).
+    be parameterized by its U{plane of rotation
+    <https://en.wikipedia.org/wiki/Plane_of_rotation`}.
+    Compound rotations are the combination of multiple simple rotations; they
+    have more than one plane of rotation. For N > 3 dimensions, a compound
+    rotation may be necessary to map one orientation to another (Euler's
+    rotation theorem no longer applies).
 
-    Use one of the following three methods to specify rotation. The first two
-    can only express simple rotation, but simple rotations may be applied in a
-    sequence to achieve a compound rotation.
-
-    (1) Provide the indices 0..N-1 of the identity basis vectors, i and j,
-    which define the plane of rotation and a radian angle of rotation, theta,
-    between them. This method contructs the Givens rotation matrix. The right
-    hand rule defines the positive rotation direction.
-
-    (2) Provide two vectors, the two vectors define the plane of rotation
-    and angle of rotation is TWICE the angle from the first vector, u, to
-    the second vector, v.
-
-    (3) Provide an N-by-N rotation matrix, R. WARNING: No checks are made to
-    determine whether the provided transformation matrix is a valid rotation.
-
-    Further Reading
-    https://en.wikipedia.org/wiki/Plane_of_rotation
+    See Also
+    ========
+    C{givens_rotation_matrix}, C{solve_rotation_ap}
 
     @param polyreg: The polytope or region to be rotated.
     @type polyreg: L{Polytope} or L{Region}
-    @param i: The first index describing the plane of rotation.
-    @type i: int
-    @param j: The second index describing the plane of rotation.
-    @type j: int
-    @param u: The first vector describing the plane of rotation.
-    @type u: 1d array
-    @param u: The second vector describing the plane of rotation.
-    @type v: 1d array.
-    @param theta: The radian angle to rotate the polyreg in the plane defined
-                  by i and j.
-    @type theta: number
     @param R: A predefined rotation matrix.
     @type R: 2d array
     """
-    # determine the rotation matrix based on inputs
-    if R is not None:
-        logger.debug("rotate: R=\n{}".format(R))
-        assert i is None, i
-        assert j is None, j
-        assert theta is None, theta
-        assert u is None, u
-        assert v is None, v
-    elif i is not None and j is not None and theta is not None:
-            logger.debug("rotate: i={}, j={}, theta={}".format(i, j, theta))
-            assert R is None, R
-            assert u is None, u
-            assert v is None, v
-            if i == j:
-                raise ValueError("Must provide two unique basis vectors.")
-            R = givens_rotation_matrix(i, j, theta, polyreg.dim)
-    elif u is not None and v is not None:
-            logger.debug("rotate: u={}, v={}".format(u, v))
-            assert R is None, R
-            assert i is None, i
-            assert j is None, j
-            assert theta is None, theta
-            R = solve_rotation_ap(u, v)
-    else:
-        raise ValueError("R or (i and j and theta) or (u and v) "
-                         "must be defined.")
+    logger.debug("rotate: R=\n{}".format(R))
     if isinstance(polyreg, Polytope):
         # Ensure that half space is normalized before rotation
         n, p = _hessian_normal(polyreg.A, polyreg.b)
@@ -552,18 +499,52 @@ def _rotate(polyreg, i=None, j=None, u=None, v=None, theta=None, R=None):
     else:
         # Rotate subregions
         for poly in polyreg.list_poly:
-            _rotate(poly, None, None, R=R)
+            rotate(poly, R)
     # transform bbox and cheby
     if polyreg.bbox is not None:
         polyreg.bbox = (np.inner(polyreg.bbox[0].T, R).T,
                         np.inner(polyreg.bbox[1].T, R).T)
     if polyreg._chebXc is not None:
         polyreg._chebXc = np.inner(polyreg._chebXc, R)
-    return R
+
+
+def rotation(polyreg, R):
+    """Return a rotated copy of C{polyreg}.
+
+    Consult L{polytope.polytope.rotate} for more detail.
+
+    @param polyreg: The polytope or region to be rotated.
+    @type polyreg: L{Polytope} or L{Region}
+    @param R: A predefined rotation matrix.
+    @type R: 2d array
+    """
+    newpoly = polyreg.copy()
+    rotate(newpoly, R)
+    return newpoly
 
 
 def givens_rotation_matrix(i, j, theta, N):
-    """Return the Givens rotation matrix for an N-dimensional space."""
+    """Return the Givens rotation matrix for an N-dimensional space.
+
+    Provide the indices 0..N-1 of the identity basis vectors, i and j,
+    which define the plane of rotation and a radian angle of rotation, theta,
+    between them. The right hand rule defines the positive rotation direction.
+
+    See Also
+    ========
+    C{rotate}, C{solve_rotation_ap}
+
+    @param i: The first index describing the plane of rotation.
+    @type i: int
+    @param j: The second index describing the plane of rotation.
+    @type j: int
+    @param theta: The radian angle to rotate the polyreg in the plane defined
+                  by i and j.
+    @type theta: number
+    """
+    logger.debug("givens: i={}, j={}, theta={}".format(i, j, theta))
+    if i == j:
+        raise ValueError("Must provide two unique basis vectors.")
     R = np.identity(N)
     c = np.cos(theta)
     s = np.sin(theta)
@@ -596,6 +577,10 @@ def solve_rotation_ap(u, v):
     NOTE: The precision of this method is limited by sin, cos, and arctan
     functions.
 
+    See Also
+    ========
+    C{givens_rotation_matrix}, C{rotate}
+
     @inproceedings{aguilera2004general,
     author = {Aguilera, Antonio and P{\'{e}}rez-Aguila, Ricardo},
     booktitle = {WSCG' 2004 - 12-th International Conference in Central
@@ -604,7 +589,13 @@ def solve_rotation_ap(u, v):
     title = {General n-dimensional rotations},
     url = {http://hdl.handle.net/11025/6178},
     year = {2004}}
+
+    @param u: The first vector describing the plane of rotation.
+    @type u: 1d array
+    @param u: The second vector describing the plane of rotation.
+    @type v: 1d array.
     """
+    logger.debug("solve_rotation_ap: u={}, v={}".format(u, v))
     # TODO: Assert vectors are non-zero and non-parallel aka exterior
     # product is non-zero
     N = u.size  # the number of dimensions
@@ -836,23 +827,16 @@ class Region(object):
                     P = union(P, isect, check_convex=True)
         return P
 
-    def rotation(self, i=None, j=None, theta=None):
-        """Returns a rotated copy of C{self}.
+    def rotation(self, R):
+        """Return a rotated copy of C{self}.
 
-        Describe the plane of rotation and the angle of rotation (in radians)
-        with i, j, and theta.
+        Consult L{polytope.polytope.rotate} for more detail.
 
-        i and j are the indices 0..N-1 of two of the identity basis
-        vectors, and theta is the angle of rotation.
-
-        Consult L{polytope.polytope._rotate} for more detail.
-
-        @type i: int
-        @type j: int
-        @type theta: number
+        @param R: A predefined rotation matrix.
+        @type R: 2d array
         """
         newreg = self.copy()
-        _rotate(newreg, i=i, j=j, theta=theta)
+        rotate(newreg, R)
         return newreg
 
     def translation(self, d):
