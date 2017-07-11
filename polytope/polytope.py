@@ -295,28 +295,24 @@ class Polytope(object):
 
         return reduce(Polytope(iA, ib), abs_tol=abs_tol)
 
-    def translation(self, d):
-        """Return a copy of C{self} translated by the vector C{d}.
+    def translate(self, d):
+        """Translate this Polytope in-place by vector d.
 
         Consult L{polytope.polytope.translate} for implementation details.
 
         @type d: 1d array
         """
-        newpoly = self.copy()
-        translate(newpoly, d)
-        return newpoly
+        translate(self, d)
 
-    def rotation(self, R):
-        """Return a rotated copy of C{self}.
+    def rotate(self, R):
+        """Rotate this Polytope in-place using rotation matrix R.
 
         Consult L{polytope.polytope.rotate} for more detail.
 
         @param R: A predefined rotation matrix.
         @type R: 2d array
         """
-        newpoly = self.copy()
-        rotate(newpoly, R)
-        return newpoly
+        rotate(self, R)
 
     def copy(self):
         """Return copy of this Polytope."""
@@ -839,28 +835,24 @@ class Region(object):
                     P = union(P, isect, check_convex=True)
         return P
 
-    def rotation(self, R):
-        """Return a rotated copy of C{self}.
+    def rotate(self, R):
+        """Rotate this Region in-place using rotation matrix R.
 
         Consult L{polytope.polytope.rotate} for more detail.
 
         @param R: A predefined rotation matrix.
         @type R: 2d array
         """
-        newreg = self.copy()
-        rotate(newreg, R)
-        return newreg
+        rotate(self, R)
 
-    def translation(self, d):
-        """Return a copy of C{self} translated by the vector C{d}.
+    def translate(self, d):
+        """Translate this Region in-place by vector d.
 
         Consult L{polytope.polytope.translate} for implementation details.
 
         @type d: 1d array
         """
-        newreg = self.copy()
-        translate(newreg, d)
-        return newreg
+        translate(self, d)
 
     def __copy__(self):
         """Return copy of this Region."""
