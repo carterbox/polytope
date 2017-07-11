@@ -78,7 +78,7 @@ class operations_test(object):
         p3 = pc.Region([pc.Polytope(self.Ab3[:, 0:2], self.Ab3[:, 2])])
         p4 = pc.Region([pc.Polytope(self.Ab4[:, 0:2], self.Ab4[:, 2])])
 
-        p = p.rotation(0, 1, np.pi/2)
+        p = pc.rotation(p, 0, 1, np.pi/2)
         print(p.bounding_box)
         assert(p == p2)
         assert(not p == p3)
@@ -86,15 +86,15 @@ class operations_test(object):
         assert(not p == p1)
         assert_allclose(p.chebXc, [-0.5, 0.5])
 
-        p = p.rotation(0, 1, np.pi/2)
+        p = pc.rotation(p, 0, 1, np.pi/2)
         assert(p == p3)
         assert_allclose(p.chebXc, [-0.5, -0.5])
 
-        p = p.rotation(0, 1, np.pi/2)
+        p = pc.rotation(p, 0, 1, np.pi/2)
         assert(p == p4)
         assert_allclose(p.chebXc, [0.5, -0.5])
 
-        p = p.rotation(0, 1, np.pi/2)
+        p = pc.rotation(p, 0, 1, np.pi/2)
         assert(p == p1)
         assert_allclose(p.chebXc, [0.5, 0.5])
 
@@ -106,7 +106,7 @@ class operations_test(object):
         p3 = pc.Polytope(self.Ab3[:, 0:2], self.Ab3[:, 2])
         p4 = pc.Polytope(self.Ab4[:, 0:2], self.Ab4[:, 2])
 
-        p = p.rotation(0, 1, np.pi/2)
+        p = pc.rotation(p, 0, 1, np.pi/2)
         print(p.bounding_box)
         assert(p == p2)
         assert(not p == p3)
@@ -114,15 +114,15 @@ class operations_test(object):
         assert(not p == p1)
         assert_allclose(p.chebXc, [-0.5, 0.5])
 
-        p = p.rotation(0, 1, np.pi/2)
+        p = pc.rotation(p, 0, 1, np.pi/2)
         assert(p == p3)
         assert_allclose(p.chebXc, [-0.5, -0.5])
 
-        p = p.rotation(0, 1, np.pi/2)
+        p = pc.rotation(p, 0, 1, np.pi/2)
         assert(p == p4)
         assert_allclose(p.chebXc, [0.5, -0.5])
 
-        p = p.rotation(0, 1, np.pi/2)
+        p = pc.rotation(p, 0, 1, np.pi/2)
         assert(p == p1)
         assert_allclose(p.chebXc, [0.5, 0.5])
 
@@ -132,10 +132,10 @@ class operations_test(object):
         p1 = pc.Region([pc.Polytope(self.A, self.b)])
         p2 = pc.Region([pc.Polytope(self.Ab2[:, 0:2], self.Ab2[:, 2])])
 
-        p = p.translation([-1, 0])
+        p = pc.translation(p, [-1, 0])
         assert(p == p2)
         assert(not p == p1)
-        p = p.translation([1, 0])
+        p = pc.translation(p, [1, 0])
         assert(p == p1)
 
 
@@ -144,10 +144,10 @@ class operations_test(object):
         p1 = pc.Polytope(self.A, self.b)
         p2 = pc.Polytope(self.Ab2[:, 0:2], self.Ab2[:, 2])
 
-        p = p.translation([-1, 0])
+        p = pc.translation(p, [-1, 0])
         assert(p == p2)
         assert(not p == p1)
-        p = p.translation([1, 0])
+        p = pc.translation(p, [1, 0])
         assert(p == p1)
 
     def region_empty_test(self):
